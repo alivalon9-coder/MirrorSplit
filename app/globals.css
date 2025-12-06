@@ -1,0 +1,41 @@
+:root{
+  --bg: #ffffff;
+  --card-bg: #ffffff;
+  --text: #0f1720;
+  --muted: #6b7280;
+  --primary: #0b5cff;
+  --accent: #eef6ff;
+  --border: #e6e9ef;
+  --btn-text: #ffffff;
+  --shadow: 0 6px 18px rgba(15,23,42,0.06);
+}
+
+[data-theme="dark"] {
+  --bg: #0b1220;
+  --card-bg: #0e1622;
+  --text: #e6eef8;
+  --muted: #94a3b8;
+  --primary: #4f8bff;
+  --accent: #07102a;
+  --border: #1f2a37;
+  --btn-text: #0b1220;
+  --shadow: 0 8px 24px rgba(2,6,23,0.6);
+}
+
+html,body {
+  height: 100%;
+  margin:0;
+  padding:0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: Inter, system-ui, sans-serif;
+}
+
+.card { background: var(--card-bg); border: 1px solid var(--border); border-radius: 10px; box-shadow: var(--shadow); padding: 16px; }
+
+.primary-btn { background: var(--primary); color: var(--btn-text); padding: 8px 12px; border-radius: 8px; border: none; cursor: pointer; }
+
+.ghost-btn { background: transparent; color: var(--text); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--border); cursor: pointer; }
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

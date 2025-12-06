@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>Upload Photos & Audio</title>
+  <style>
+    body { 
+      font-family: Arial, sans-serif; 
+      text-align: center; 
+      padding: 40px; 
+    }
+    button { 
+      padding: 12px 24px; 
+      background: #1976d2; 
+      color: white; 
+      border: none; 
+      border-radius: 8px; 
+      cursor: pointer; 
+      font-size: 18px; 
+    }
+    #filename { 
+      margin-top: 10px; 
+      color: #333; 
+    }
+    #progress {
+      margin-top: 15px;
+      width: 300px;
+      height: 12px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-left: auto;
+      margin-right: auto;
+      overflow: hidden;
+    }
+    #bar {
+      width: 0%;
+      height: 100%;
+      background: lightgreen;
+    }
+  </style>
+</head>
+
+<body>
+
+  <h1>Upload Photos & Audio</h1>
+
+  <!-- hidden input -->
+  <input id="fileInput" type="file" accept="image/*,audio/*" style="display:none" />
+
+  <!-- buttons -->
+  <button id="selectBtn">Choose File</button>
+  <button id="uploadBtn" disabled>Upload Now</button>
+
+  <div id="filename">No file selected</div>
+
+  <div id="progress">
+    <div id="bar"></div>
+  </div>
+
+  <script>
+    const fileInput = document.getElementById('fileInput');
+    const selectBtn = document.getElementById('selectBtn');
+    const uploadBtn = document.getElementById('uploadBtn');
+    const filenameDiv = document.getElementById('filename');
+    const bar = document.getElementById('bar');
+
+    let selectedFile = null;
+
+    // pick file
+    selectBtn.addEventListener('click', () => {
+      fileInput.click();
+    });
+
+    // when file chosen
+    fileInput.addEventListener('change', () => {
+      const f = fileInput.files[0];
+      if (!f) return;
+      selectedFile = f;
+
+      filenameDiv.textContent = "Selected: " + f.name;
+      uploadBtn.disabled = false;
+    });
+
+    // upload
+    uploadBtn.addEventListener('click', () => {
+      if (!selectedFile) return;
+
+      const formData = new FormData();
+      formData.append('file', selectedFile);
+
+      const xhr = new XMLHttpRequest();
+      xhr.open('POST', '/api/upload', true);
+
+      xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+          const pct = Math.round((e.loaded / e.total) * 100);
+          bar.style.width = pct + '%';
+        }
+      };
+
+      xhr.onload = () => {
+        if (xhr.status >= 200 && xhr.status < 300) {
+          window.location.href = '/files.html';
+        } else {
+          alert('Upload failed');
+        }
+      };
+
+      xhr.send(formData);
+      uploadBtn.disabled = true;
+      selectBtn.disabled = true;
+    });
+  </script>
+
+</body>
+</html>
