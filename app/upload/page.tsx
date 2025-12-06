@@ -10,7 +10,7 @@ type Uploaded = {
   original_filename?: string;
 };
 
-export default function UploadPage(): JSX.Element {
+export default function UploadPage() {
   const CLOUD_NAME = "declkbi9r";
   const UPLOAD_PRESET = "qvehbn1y";
 

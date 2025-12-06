@@ -6,7 +6,7 @@ export default function UploadPage() {
   const inputRef = useRef<HTMLInputElement | null>(null);
   const [loading, setLoading] = useState(false);
 
-  // فتح نافذة اختيار الملف
+  // يفتح نافذة اختيار الملف
   const openFilePicker = () => {
     inputRef.current?.click();
   };
@@ -21,21 +21,23 @@ export default function UploadPage() {
       const form = new FormData();
       form.append('file', file);
 
-      // Method: إرسال إلى API محلي أو سيرفرك (تأكد أن /api/upload موجود)
+      // غيّر المسار لو عندك endpoint مختلف
       const res = await fetch('/api/upload', {
         method: 'POST',
         body: form,
       });
 
       if (!res.ok) {
+        // حاول نقرأ رسالة الخطأ من السيرفر
         const text = await res.text();
         throw new Error(text || 'Upload failed');
       }
 
-      // إذا ناجح — نروح صفحة الملفات
+      // لو نجاح — روح لصفحة الملفات أو أي صفحة تحبها
       window.location.href = '/files';
     } catch (err: any) {
-      alert('Upload error: ' + (err.message || err));
+      // أبدي للمستخدم الخطأ
+      alert('Upload error: ' + (err?.message || err));
       setLoading(false);
     }
   };
@@ -64,7 +66,7 @@ export default function UploadPage() {
           color: 'white',
           border: 'none',
           borderRadius: 6,
-          cursor: 'pointer'
+          cursor: loading ? 'not-allowed' : 'pointer',
         }}
       >
         {loading ? 'Uploading...' : 'Upload Now'}
