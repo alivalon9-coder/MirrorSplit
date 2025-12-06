@@ -1,42 +1,26 @@
 // app/api/upload/route.ts
-import fs from "fs";
-import path from "path";
 import { NextResponse } from "next/server";
 
-export const runtime = "nodejs";
+export const runtime = "edge"; // or remove if you prefer serverless
 
 export async function POST(req: Request) {
   try {
-    // Get the incoming form data
-    const formData = await req.formData();
+    const form = await req.formData();
+    const file = form.get("file") as File | null;
 
-    // 'file' هو اسم الحقل في الفورم - لو انت بتبعته باسم تاني غيّره هنا
-    const uploadFile = formData.get("file") as File | null;
-    if (!uploadFile) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    if (!file) {
+      return new NextResponse("No file received", { status: 400 });
     }
 
-    // اقرأ البينات وحوّلها لبايتس
-    const arrayBuffer = await uploadFile.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
+    // read file name + size (you can change to upload to cloud here)
+    const filename = file.name ?? "unknown";
+    const size = file.size ?? 0;
 
-    // اسم الملف (fallback لو مفيش اسم)
-    const safeFilename = uploadFile.name || `upload-${Date.now()}`;
-
-    // مجلّد التخزين: /public/uploads
-    const uploadsDir = path.join(process.cwd(), "public", "uploads");
-    await fs.promises.mkdir(uploadsDir, { recursive: true });
-
-    // المسار النهائي وحفظ الملف
-    const finalPath = path.join(uploadsDir, safeFilename);
-    await fs.promises.writeFile(finalPath, buffer);
-
-    // URL للملف (قابل للاستخدام في الموقع)
-    const url = `/uploads/${encodeURIComponent(safeFilename)}`;
-
-    return NextResponse.json({ url }, { status: 200 });
+    // *Temporary* — we are NOT storing the file permanently, only reading
+    // If you want to upload to Cloudinary / S3 here, do it and return the URL.
+    // For now return basic info:
+    return NextResponse.json({ ok: true, filename, size });
   } catch (err: any) {
-    console.error("Upload error:", err);
-    return NextResponse.json({ error: err?.message || "Upload failed" }, { status: 500 });
+    return new NextResponse("Server error: " + (err?.message ?? err), { status: 500 });
   }
 }
