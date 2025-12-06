@@ -1,39 +1,42 @@
-import { NextResponse } from "next/server";
-import formidable from "formidable";
+// app/api/upload/route.ts
 import fs from "fs";
+import path from "path";
+import { NextResponse } from "next/server";
 
-export const config = {
-  api: {
-    bodyParser: false,
-  },
-};
+export const runtime = "nodejs";
 
 export async function POST(req: Request) {
-  return new Promise((resolve, reject) => {
-    const form = formidable({
-      uploadDir: "public/uploads",
-      keepExtensions: true,
-      multiples: false,
-    });
+  try {
+    // Get the incoming form data
+    const formData = await req.formData();
 
-    form.parse(req as any, (err, fields, files) => {
-      if (err) {
-        reject(NextResponse.json({ success: false, error: err.message }));
-        return;
-      }
+    // 'file' هو اسم الحقل في الفورم - لو انت بتبعته باسم تاني غيّره هنا
+    const uploadFile = formData.get("file") as File | null;
+    if (!uploadFile) {
+      return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    }
 
-      const file = files.file;
-      const filename = Array.isArray(file) ? file[0].newFilename : file.newFilename;
-      const url = /uploads/${encodeURIComponent(filename)};
+    // اقرأ البينات وحوّلها لبايتس
+    const arrayBuffer = await uploadFile.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
 
-      resolve(
-        NextResponse.json({
-          success: true,
-          name: filename,
-          url,
-        })
-      );
-    });
-  });
+    // اسم الملف (fallback لو مفيش اسم)
+    const safeFilename = uploadFile.name || `upload-${Date.now()}`;
 
-      const file = files.file;
+    // مجلّد التخزين: /public/uploads
+    const uploadsDir = path.join(process.cwd(), "public", "uploads");
+    await fs.promises.mkdir(uploadsDir, { recursive: true });
+
+    // المسار النهائي وحفظ الملف
+    const finalPath = path.join(uploadsDir, safeFilename);
+    await fs.promises.writeFile(finalPath, buffer);
+
+    // URL للملف (قابل للاستخدام في الموقع)
+    const url = `/uploads/${encodeURIComponent(safeFilename)}`;
+
+    return NextResponse.json({ url }, { status: 200 });
+  } catch (err: any) {
+    console.error("Upload error:", err);
+    return NextResponse.json({ error: err?.message || "Upload failed" }, { status: 500 });
+  }
+}
