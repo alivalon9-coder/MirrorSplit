@@ -1,48 +1,45 @@
 // app/page.tsx
 "use client";
+
 import React, { useState } from "react";
 
 export default function Page() {
   const [fileName, setFileName] = useState<string | null>(null);
   const [progress, setProgress] = useState<number | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
-  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const f = e.target.files?.[0];
     if (!f) return;
     setFileName(f.name);
-
-    // محاكاة رفع مؤقتة (لو عندك لوجيك رفع حقيقي خلييه هنا)
-    setProgress(0);
-    const id = setInterval(() => {
-      setProgress((p) => {
-        if (p === null) return 10;
-        if (p >= 100) { clearInterval(id); return 100; }
-        return p + 10;
-      });
-    }, 250);
+    setMessage(null);
+    // اوقف شريط التقدّم اذا كان شغّال من قبل
+    setProgress(null);
   }
 
-  return (
-    <div className="min-h-screen p-8 bg-white text-gray-900">
-      <a href="/" className="mb-6 block text-sm">HomeUpload</a>
-      <h1 className="text-3xl font-bold mb-4">Upload</h1>
+  // هذه دالة محاكاة لرفع الملف (لو عندك API/Cloudinary ضع هنا المنطق الحقيقي)
+  async function handleUpload() {
+    const input = document.querySelector<HTMLInputElement>('input[type="file"]');
+    const file = input?.files?.[0];
+    if (!file) {
+      setMessage("Please choose a file first.");
+      return;
+    }
 
-      <div className="mb-4">
-        <input type="file" onChange={onFile} />
-      </div>
+    try {
+      setUploading(true);
+      setProgress(0);
 
-      {fileName && <div className="mb-2 font-semibold">Selected: {fileName}</div>}
-
-      {progress !== null && (
-        <div className="w-full max-w-lg mt-3">
-          <div className="h-3 bg-gray-200 rounded">
-            <div style={{ width: `${progress}%` }} className="h-3 rounded bg-green-400 transition-all" />
-          </div>
-          <div className="mt-1 text-sm">{progress}%</div>
-        </div>
-      )}
-
-      <footer className="mt-8 text-xs text-gray-500">© 2025 MirrorSplit • Built with ❤️ • Cloudinary</footer>
-    </div>
-  );
-}
+      // --- مثال محاكاة تقدم الرفع ---
+      await new Promise<void>((resolve) => {
+        const id = setInterval(() => {
+          setProgress((p) => {
+            const next = (p ?? 0) + 10;
+            if (next >= 100) {
+              clearInterval(id);
+              resolve();
+              return 100;
+            }
+            return next;
+          });
