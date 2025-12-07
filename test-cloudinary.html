@@ -1,0 +1,12 @@
+<!doctype html>
+<html>
+  <body style="font-family:Arial">
+    <h3>Cloudinary test form</h3>
+    <form action="https://api.cloudinary.com/v1_1/declkbi9r/auto/upload" method="post" enctype="multipart/form-data" target="resp">
+      <input type="file" name="file" />
+      <input type="hidden" name="upload_preset" value="audio_upload" />
+      <button type="submit">Upload</button>
+    </form>
+    <iframe name="resp" style="width:100%;height:220px;border:1px solid #ddd;margin-top:12px"></iframe>
+  </body>
+</html>
