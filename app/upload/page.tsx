@@ -38,9 +38,10 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="bg-white/20 backdrop-blur-md shadow-xl rounded-2xl p-8 w-full max-w-md border border-white/30">
-        <h1 className="text-3xl font-bold text-center mb-6 text-white">
+    <div className="min-h-screen w-full flex items-center justify-center">
+      <div className="bg-white/20 backdrop-blur-xl shadow-2xl rounded-2xl p-10 w-full max-w-md border border-white/30">
+
+        <h1 className="text-3xl font-bold text-center mb-6 text-white drop-shadow-lg">
           Upload Audio
         </h1>
 
@@ -50,7 +51,7 @@ export default function UploadPage() {
             type="file"
             accept="audio/*"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
-            className="mt-2 w-full text-white bg-white/10 border border-white/30 p-2 rounded-lg"
+            className="mt-2 w-full text-white bg-white/10 border border-white/40 p-2 rounded-lg"
           />
         </label>
 
@@ -72,7 +73,7 @@ export default function UploadPage() {
         <button
           onClick={handleUpload}
           disabled={!file || uploading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 transition-all"
+          className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 transition-all shadow-lg"
         >
           {uploading ? "Uploading..." : "Start Upload"}
         </button>
