@@ -1,3 +1,4 @@
+// app/api/upload/route.ts
 import { v2 as cloudinary } from "cloudinary";
 import { NextResponse } from "next/server";
 
@@ -9,28 +10,34 @@ cloudinary.config({
 
 export async function POST(req: Request) {
   try {
-    const data = await req.formData();
-    const file: File | null = data.get("file") as unknown as File;
+    const form = await req.formData();
+    const file = form.get("file") as unknown as File | null;
 
     if (!file) {
-      return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
+      return NextResponse.json({ ok: false, error: "No file uploaded" }, { status: 400 });
     }
 
+    // read file into Buffer
     const arrayBuffer = await file.arrayBuffer();
     const buffer = Buffer.from(arrayBuffer);
 
-    const uploaded = await cloudinary.uploader.upload_stream(
-      { resource_type: "auto" },
-      (error, result) => {
-        if (error) throw error;
-      }
-    );
+    // upload via uploader.upload_stream wrapped in a Promise
+    const uploadResult: any = await new Promise((resolve, reject) => {
+      const stream = cloudinary.uploader.upload_stream(
+        { resource_type: "auto" },
+        (err: any, result: any) => {
+          if (err) return reject(err);
+          resolve(result);
+        }
+      );
 
-    return NextResponse.json({
-      success: true,
-      url: uploaded?.secure_url,
+      // write buffer and close stream
+      stream.end(buffer);
     });
-  } catch (err) {
-    return NextResponse.json({ error: "Upload failed" }, { status: 500 });
+
+    return NextResponse.json({ ok: true, result: uploadResult });
+  } catch (err: any) {
+    console.error("Upload error:", err);
+    return NextResponse.json({ ok: false, error: (err && err.message) || String(err) }, { status: 500 });
   }
 }
