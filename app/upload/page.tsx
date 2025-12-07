@@ -1,83 +1,47 @@
+// app/page.tsx
 "use client";
 import React, { useState } from "react";
 
-export default function UploadPage() {
-  const [file, setFile] = useState<File | null>(null);
-  const [progress, setProgress] = useState(0);
-  const [uploading, setUploading] = useState(false);
+export default function Page() {
+  const [fileName, setFileName] = useState<string | null>(null);
+  const [progress, setProgress] = useState<number | null>(null);
 
-  const handleUpload = async () => {
-    if (!file) return;
-    setUploading(true);
-
-    const formData = new FormData();
-    formData.append("file", file);
-
-    const xhr = new XMLHttpRequest();
-    xhr.open("POST", "/api/upload");
-
-    xhr.upload.onprogress = (e) => {
-      if (e.lengthComputable) {
-        const p = Math.round((e.loaded / e.total) * 100);
-        setProgress(p);
-      }
-    };
-
-    xhr.onload = () => {
-      setUploading(false);
-      alert("Upload completed!");
-    };
-
-    xhr.onerror = () => {
-      setUploading(false);
-      alert("Upload failed!");
-    };
-
-    xhr.send(formData);
-  };
+  function onFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const f = e.target.files?.[0];
+    if (!f) return;
+    setFileName(f.name);
+    // مؤقت: محاكاة رفع
+    setProgress(0);
+    const id = setInterval(() => {
+      setProgress((p) => {
+        if (p === null) return 10;
+        if (p >= 100) { clearInterval(id); return 100; }
+        return p + 10;
+      });
+    }, 250);
+  }
 
   return (
-    <div className="w-full flex items-center justify-center">
-      <div className="bg-white/20 backdrop-blur-lg shadow-xl rounded-xl p-8 w-full max-w-md border border-white/30">
+    <div className="min-h-screen p-8 bg-white text-gray-900">
+      <a href="/" className="mb-6 block text-sm">HomeUpload</a>
+      <h1 className="text-3xl font-bold mb-4">Upload</h1>
 
-        <h1 className="text-3xl font-bold text-center mb-6 text-white">
-          Upload Audio
-        </h1>
-
-        <label className="block mb-4">
-          <span className="text-white font-medium">Choose File</span>
-          <input
-            type="file"
-            accept="audio/*"
-            onChange={(e) => setFile(e.target.files?.[0] || null)}
-            className="mt-2 w-full bg-white/10 text-white border border-white/30 p-2 rounded-md"
-          />
-        </label>
-
-        {file && (
-          <p className="text-sm text-white mb-4">
-            Selected: <span className="font-semibold">{file.name}</span>
-          </p>
-        )}
-
-        {uploading && (
-          <div className="w-full bg-white/20 rounded-full h-3 mb-4">
-            <div
-              className="bg-green-400 h-3 rounded-full transition-all"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-        )}
-
-        <button
-          onClick={handleUpload}
-          disabled={!file || uploading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-500 transition-all"
-        >
-          {uploading ? "Uploading..." : "Start Upload"}
-        </button>
-
+      <div className="mb-4">
+        <input type="file" onChange={onFile} />
       </div>
+
+      {fileName && <div className="mb-2 font-semibold">Selected: {fileName}</div>}
+
+      {progress !== null && (
+        <div className="w-full max-w-lg mt-3">
+          <div className="h-3 bg-gray-200 rounded">
+            <div style={{ width: `${progress}%` }} className="h-3 rounded bg-green-400 transition-all" />
+          </div>
+          <div className="mt-1 text-sm">{progress}%</div>
+        </div>
+      )}
+
+      <footer className="mt-8 text-xs text-gray-500">© 2025 MirrorSplit • Built with ❤️ • Cloudinary</footer>
     </div>
   );
 }
