@@ -1,10 +1,12 @@
 "use client";
-import React, { useState } from "react";
+// app/page.tsx
+import { redirect } from "next/navigation";
 
-export default function UploadPage() {
-  const [file, setFile] = useState<File | null>(null);
-  const [progress, setProgress] = useState(0);
-  const [uploading, setUploading] = useState(false);
+export default function Home() {
+  // يوجّه كل زيارة للـ root إلى /upload
+  redirect("/upload");
+}
+
 
   const handleUpload = async () => {
     if (!file) return;
