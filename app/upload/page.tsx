@@ -8,7 +8,6 @@ export default function UploadPage() {
 
   const handleUpload = async () => {
     if (!file) return;
-
     setUploading(true);
 
     const formData = new FormData();
@@ -38,20 +37,20 @@ export default function UploadPage() {
   };
 
   return (
-    <div className="min-h-screen w-full flex items-center justify-center">
-      <div className="bg-white/20 backdrop-blur-xl shadow-2xl rounded-2xl p-10 w-full max-w-md border border-white/30">
+    <div className="w-full flex items-center justify-center">
+      <div className="bg-white/20 backdrop-blur-lg shadow-xl rounded-xl p-8 w-full max-w-md border border-white/30">
 
-        <h1 className="text-3xl font-bold text-center mb-6 text-white drop-shadow-lg">
+        <h1 className="text-3xl font-bold text-center mb-6 text-white">
           Upload Audio
         </h1>
 
         <label className="block mb-4">
-          <span className="text-white font-medium">Choose file</span>
+          <span className="text-white font-medium">Choose File</span>
           <input
             type="file"
             accept="audio/*"
             onChange={(e) => setFile(e.target.files?.[0] || null)}
-            className="mt-2 w-full text-white bg-white/10 border border-white/40 p-2 rounded-lg"
+            className="mt-2 w-full bg-white/10 text-white border border-white/30 p-2 rounded-md"
           />
         </label>
 
@@ -66,17 +65,18 @@ export default function UploadPage() {
             <div
               className="bg-green-400 h-3 rounded-full transition-all"
               style={{ width: `${progress}%` }}
-            ></div>
+            />
           </div>
         )}
 
         <button
           onClick={handleUpload}
           disabled={!file || uploading}
-          className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-400 transition-all shadow-lg"
+          className="w-full bg-blue-600 text-white py-2 rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-500 transition-all"
         >
           {uploading ? "Uploading..." : "Start Upload"}
         </button>
+
       </div>
     </div>
   );

@@ -9,22 +9,23 @@ export const metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="min-h-screen relative overflow-x-hidden">
+      <body className="min-h-screen relative overflow-hidden">
         
         {/* Background Image */}
         <Image
           src="/images/site_theme_background.png"
-          alt="Background"
+          alt="bg"
           fill
           priority
           style={{ objectFit: "cover" }}
           className="z-0"
         />
 
-        {/* overlay (optional) */}
+        {/* Dark overlay for readability */}
         <div className="absolute inset-0 bg-black/40 z-0" />
 
-        <main className="relative z-10 min-h-screen">
+        {/* Page content */}
+        <main className="relative z-10 min-h-screen flex items-center justify-center">
           {children}
         </main>
 
