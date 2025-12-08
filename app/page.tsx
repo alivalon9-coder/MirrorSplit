@@ -111,38 +111,29 @@ export default function UploadPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-indigo-900 via-violet-800 to-rose-700 text-slate-100 py-12">
+    <div className="relative min-h-screen bg-slate-900 text-slate-100 py-12">
+      {/* decorative background layer: behind content, doesn't capture pointer events */}
+      <div className="absolute inset-0 -z-10 pointer-events-none">
+        {/* gradient background */}
+        <div className="w-full h-full bg-gradient-to-b from-indigo-900 via-violet-800 to-rose-700 opacity-95" />
+        {/* optional subtle pattern overlay (pointer-events-none so it won't block clicks) */}
+        <div className="absolute inset-0 -z-10 pointer-events-none" aria-hidden>
+          {/* you can put svg or image here if you want */}
+        </div>
+      </div>
+
       <div className="max-w-5xl mx-auto px-6">
-        {/* Hero */}
-        <div className="mb-8 rounded-2xl bg-white/8 backdrop-blur-md border border-white/10 p-6 md:p-8 shadow-xl">
+        {/* Hero (kept decorative) */}
+        <div className="mb-8 rounded-2xl bg-white/6 backdrop-blur-sm border border-white/6 p-6 md:p-8 shadow-lg relative z-0">
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">MirrorSplit — Upload & Share</h1>
+              <h1 className="text-3xl md:text-4xl font-bold tracking-tight">MirrorSplit — Upload & Share</h1>
               <p className="mt-2 text-sm text-white/80 max-w-xl">
-                Upload your track, add cover art and get a shareable link. Fast, simple, and mobile-friendly.
+                Upload your track, add cover art and get a shareable link. Mobile friendly and fast.
               </p>
-              <div className="mt-3 flex gap-3">
-                <a
-                  href="/upload"
-                  className="inline-flex items-center gap-2 bg-white/12 px-4 py-2 rounded-md text-sm font-medium hover:bg-white/20 transition"
-                >
-                  Upload a track
-                </a>
-                <a
-                  href="/browse"
-                  className="inline-flex items-center gap-2 bg-white/6 px-4 py-2 rounded-md text-sm font-medium hover:bg-white/14 transition"
-                >
-                  Browse tracks
-                </a>
-              </div>
             </div>
-
             <div className="flex items-center gap-4">
-              <div className="hidden md:block text-right">
-                <div className="text-sm text-white/80">Need help?</div>
-                <div className="text-xs text-white/60 mt-1">Contact support or read docs</div>
-              </div>
-              <div className="w-24 h-24 rounded-lg bg-white/6 flex items-center justify-center border border-white/8">
+              <div className="w-20 h-20 rounded-lg bg-white/6 flex items-center justify-center border border-white/8">
                 <svg width="36" height="36" viewBox="0 0 24 24" fill="none" className="text-white/90">
                   <path d="M12 2v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M18.4 4.6L15 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -153,8 +144,8 @@ export default function UploadPage() {
           </div>
         </div>
 
-        {/* Main card */}
-        <section className="bg-white/6 border border-white/8 rounded-2xl p-6 md:p-8 shadow-2xl">
+        {/* Main card (raised above background with z-10) */}
+        <section className="relative z-10 bg-white/6 border border-white/8 rounded-2xl p-6 md:p-8 shadow-2xl">
           <div className="grid md:grid-cols-3 gap-6">
             {/* Left column: form */}
             <div className="md:col-span-2">
@@ -178,7 +169,7 @@ export default function UploadPage() {
                 <div className="flex items-center justify-center gap-3">
                   <label
                     htmlFor="audioInput"
-                    className="inline-flex items-center gap-2 px-5 py-3 bg-indigo-600 rounded-lg text-sm font-semibold cursor-pointer hover:bg-indigo-500 transition"
+                    className="inline-flex items-center gap-2 px-5 py-3 bg-indigo-600 rounded-lg text-sm font-semibold cursor-pointer hover:bg-indigo-500 transition pointer-events-auto"
                   >
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3v12" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><path d="M8 7l4-4 4 4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
                     Choose audio
@@ -214,7 +205,7 @@ export default function UploadPage() {
               <div className="mt-4 flex items-center gap-4">
                 <div>
                   <label className="text-sm font-medium text-white/90 block">Cover (optional)</label>
-                  <label htmlFor="coverInput" className="inline-flex items-center gap-2 px-3 py-2 mt-2 border rounded-md cursor-pointer bg-white/4">
+                  <label htmlFor="coverInput" className="inline-flex items-center gap-2 px-3 py-2 mt-2 border rounded-md cursor-pointer bg-white/4 pointer-events-auto">
                     Select image
                   </label>
                   <input
@@ -238,12 +229,12 @@ export default function UploadPage() {
                 <button
                   onClick={uploadToServer}
                   disabled={upload.uploading || !audioFile}
-                  className="px-5 py-3 rounded-lg bg-rose-500 text-white font-semibold disabled:opacity-60"
+                  className="px-5 py-3 rounded-lg bg-rose-500 text-white font-semibold disabled:opacity-60 pointer-events-auto"
                 >
                   {upload.uploading ? "Uploading…" : "Start upload"}
                 </button>
 
-                <button onClick={clearAll} className="px-4 py-3 rounded-lg border border-white/12 text-white/90 bg-white/4">
+                <button onClick={clearAll} className="px-4 py-3 rounded-lg border border-white/12 text-white/90 bg-white/4 pointer-events-auto">
                   Clear
                 </button>
 
@@ -271,7 +262,7 @@ export default function UploadPage() {
                     <a className="text-amber-200 break-words" href={upload.url} target="_blank" rel="noreferrer">{upload.url}</a>
                   </div>
                   <div className="flex flex-col gap-2">
-                    <button onClick={copyLink} className="px-3 py-2 rounded bg-white/10 text-white text-sm">Copy</button>
+                    <button onClick={copyLink} className="px-3 py-2 rounded bg-white/10 text-white text-sm pointer-events-auto">Copy</button>
                     <a className="px-3 py-2 rounded bg-amber-500 text-white text-sm" href={upload.url} target="_blank" rel="noreferrer">Open</a>
                   </div>
                 </div>
