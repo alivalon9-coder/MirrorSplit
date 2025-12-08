@@ -152,9 +152,3 @@ export default function UploadEnhancePage() {
       {progressText && <div className="mt-3 text-gray-600 text-sm">{progressText}</div>}
 
       {
-
-
-
-
-
-ChatGPT can make mistakes. Che
