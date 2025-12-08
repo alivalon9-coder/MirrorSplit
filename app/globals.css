@@ -1,20 +1,20 @@
 /* app/globals.css */
 
-/* RESET بسيط */
+/* Reset */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
-/* Body بدون أي خلفية */
+/* BODY WITH NO BACKGROUND AT ALL */
 body {
-  font-family: sans-serif;
-  background: white;
+  background: #ffffff !important;
   color: black;
+  font-family: sans-serif;
 }
 
-/* Tailwind base لو شغال عندك */
+/* Tailwind */
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
