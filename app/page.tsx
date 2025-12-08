@@ -111,162 +111,209 @@ export default function UploadPage() {
   }
 
   return (
-    <main className="max-w-3xl mx-auto px-4 py-8">
-      <section className="bg-white/90 border rounded-lg shadow p-6">
-        <header className="mb-4">
-          <h1 className="text-2xl md:text-3xl font-semibold">Upload Audio</h1>
-          <p className="text-sm text-gray-500 mt-1">
-            Add a title, optional cover art, then upload your track. After upload you'll get a shareable link.
-          </p>
-        </header>
+    <div className="min-h-screen bg-gradient-to-b from-indigo-900 via-violet-800 to-rose-700 text-slate-100 py-12">
+      <div className="max-w-5xl mx-auto px-6">
+        {/* Hero */}
+        <div className="mb-8 rounded-2xl bg-white/8 backdrop-blur-md border border-white/10 p-6 md:p-8 shadow-xl">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+            <div>
+              <h1 className="text-3xl md:text-4xl font-extrabold tracking-tight">MirrorSplit — Upload & Share</h1>
+              <p className="mt-2 text-sm text-white/80 max-w-xl">
+                Upload your track, add cover art and get a shareable link. Fast, simple, and mobile-friendly.
+              </p>
+              <div className="mt-3 flex gap-3">
+                <a
+                  href="/upload"
+                  className="inline-flex items-center gap-2 bg-white/12 px-4 py-2 rounded-md text-sm font-medium hover:bg-white/20 transition"
+                >
+                  Upload a track
+                </a>
+                <a
+                  href="/browse"
+                  className="inline-flex items-center gap-2 bg-white/6 px-4 py-2 rounded-md text-sm font-medium hover:bg-white/14 transition"
+                >
+                  Browse tracks
+                </a>
+              </div>
+            </div>
 
-        <div className="space-y-5">
-          {/* Title */}
-          <label className="block">
-            <span className="text-sm font-medium">Title</span>
-            <input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="Track title"
-              aria-label="Track title"
-              className="mt-2 block w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
-            />
-          </label>
-
-          {/* Audio drop / select */}
-          <div
-            onDrop={(e) => { e.preventDefault(); handleAudioPick(e.dataTransfer.files); }}
-            onDragOver={(e) => e.preventDefault()}
-            className="border-2 border-dashed border-gray-200 rounded-md p-4 text-center"
-            role="button"
-            aria-label="Drop audio file here"
-          >
-            <p className="text-sm text-gray-600 mb-3">Drag & drop audio file here (mp3, wav, m4a) — or</p>
-
-            <div className="flex items-center justify-center gap-3">
-              <label
-                htmlFor="audioInput"
-                className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-md cursor-pointer"
-                aria-hidden
-              >
-                Choose audio
-              </label>
-              <input
-                id="audioInput"
-                ref={audioInputRef}
-                type="file"
-                accept="audio/*"
-                onChange={(e) => handleAudioPick(e.target.files)}
-                className="hidden"
-              />
-
-              <span className="text-sm text-gray-500">Max recommended 20MB</span>
+            <div className="flex items-center gap-4">
+              <div className="hidden md:block text-right">
+                <div className="text-sm text-white/80">Need help?</div>
+                <div className="text-xs text-white/60 mt-1">Contact support or read docs</div>
+              </div>
+              <div className="w-24 h-24 rounded-lg bg-white/6 flex items-center justify-center border border-white/8">
+                <svg width="36" height="36" viewBox="0 0 24 24" fill="none" className="text-white/90">
+                  <path d="M12 2v6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M18.4 4.6L15 8" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                  <path d="M4 12a8 8 0 1 0 16 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
             </div>
           </div>
+        </div>
 
-          {/* Cover & preview */}
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-            <div className="flex items-center gap-4">
-              <div>
-                <label className="text-sm font-medium block">Cover image (optional)</label>
-                <label
-                  htmlFor="coverInput"
-                  className="inline-flex items-center gap-2 px-3 py-2 mt-2 border rounded-md cursor-pointer"
-                >
-                  Select image
-                </label>
+        {/* Main card */}
+        <section className="bg-white/6 border border-white/8 rounded-2xl p-6 md:p-8 shadow-2xl">
+          <div className="grid md:grid-cols-3 gap-6">
+            {/* Left column: form */}
+            <div className="md:col-span-2">
+              <label className="block mb-3">
+                <span className="text-sm font-medium text-white/90">Title</span>
                 <input
-                  id="coverInput"
-                  ref={coverInputRef}
-                  type="file"
-                  accept="image/*"
-                  onChange={(e) => handleCoverPick(e.target.files)}
-                  className="hidden"
+                  value={title}
+                  onChange={(e) => setTitle(e.target.value)}
+                  placeholder="Track title"
+                  className="mt-2 block w-full rounded-md border border-white/12 bg-white/4 px-3 py-2 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-white/20"
                 />
+              </label>
+
+              <div
+                onDrop={(e) => { e.preventDefault(); handleAudioPick(e.dataTransfer.files); }}
+                onDragOver={(e) => e.preventDefault()}
+                className="rounded-lg border-2 border-dashed border-white/12 p-6 text-center bg-white/3"
+              >
+                <p className="text-sm text-white/85 mb-3">Drag & drop audio here (mp3, wav, m4a) — or</p>
+
+                <div className="flex items-center justify-center gap-3">
+                  <label
+                    htmlFor="audioInput"
+                    className="inline-flex items-center gap-2 px-5 py-3 bg-indigo-600 rounded-lg text-sm font-semibold cursor-pointer hover:bg-indigo-500 transition"
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3v12" stroke="white" strokeWidth="1.5" strokeLinecap="round"/><path d="M8 7l4-4 4 4" stroke="white" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                    Choose audio
+                  </label>
+                  <input
+                    id="audioInput"
+                    ref={audioInputRef}
+                    type="file"
+                    accept="audio/*"
+                    onChange={(e) => handleAudioPick(e.target.files)}
+                    className="hidden"
+                  />
+                  <span className="text-sm text-white/70">Max: 20MB</span>
+                </div>
+
+                {audioFile && (
+                  <div className="mt-4 text-left">
+                    <div className="flex items-center justify-between gap-4">
+                      <div>
+                        <div className="text-sm font-medium text-white/90">{audioFile.name}</div>
+                        <div className="text-xs text-white/70 mt-1">{Math.round((audioFile.size/1024)/1024*10)/10} MB</div>
+                      </div>
+                      <div className="text-sm text-white/70">{upload.progress ? `${upload.progress}%` : ""}</div>
+                    </div>
+
+                    <div className="mt-3">
+                      <audio ref={audioRef} controls src={URL.createObjectURL(audioFile)} className="w-full" />
+                    </div>
+                  </div>
+                )}
               </div>
 
-              {coverFile && (
-                <div className="w-20 h-20 rounded overflow-hidden border">
-                  <img
-                    src={URL.createObjectURL(coverFile)}
-                    alt="cover preview"
-                    className="w-full h-full object-cover"
+              <div className="mt-4 flex items-center gap-4">
+                <div>
+                  <label className="text-sm font-medium text-white/90 block">Cover (optional)</label>
+                  <label htmlFor="coverInput" className="inline-flex items-center gap-2 px-3 py-2 mt-2 border rounded-md cursor-pointer bg-white/4">
+                    Select image
+                  </label>
+                  <input
+                    id="coverInput"
+                    ref={coverInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => handleCoverPick(e.target.files)}
+                    className="hidden"
                   />
+                </div>
+
+                {coverFile && (
+                  <div className="w-24 h-24 rounded overflow-hidden border border-white/12">
+                    <img src={URL.createObjectURL(coverFile)} alt="cover" className="w-full h-full object-cover" />
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-6 flex items-center gap-3">
+                <button
+                  onClick={uploadToServer}
+                  disabled={upload.uploading || !audioFile}
+                  className="px-5 py-3 rounded-lg bg-rose-500 text-white font-semibold disabled:opacity-60"
+                >
+                  {upload.uploading ? "Uploading…" : "Start upload"}
+                </button>
+
+                <button onClick={clearAll} className="px-4 py-3 rounded-lg border border-white/12 text-white/90 bg-white/4">
+                  Clear
+                </button>
+
+                <div className="ml-auto text-sm text-white/70">
+                  {audioFile ? "Ready to upload" : "No file selected"}
+                </div>
+              </div>
+
+              {/* progress */}
+              <div className="mt-4">
+                <div className="h-2 bg-white/10 rounded overflow-hidden">
+                  <div className="h-full bg-rose-500 transition-all" style={{ width: `${upload.progress}%` }} />
+                </div>
+                <div className="mt-2 flex items-center justify-between text-sm">
+                  <div className="text-white/80">{upload.message ?? upload.error ?? ""}</div>
+                  <div className="text-white/60">{upload.progress ? `${upload.progress}%` : ""}</div>
+                </div>
+              </div>
+
+              {/* result */}
+              {upload.url && (
+                <div className="mt-4 flex items-start gap-3 bg-white/6 p-3 rounded">
+                  <div className="flex-1">
+                    <div className="text-sm font-medium text-white/90">Share link</div>
+                    <a className="text-amber-200 break-words" href={upload.url} target="_blank" rel="noreferrer">{upload.url}</a>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    <button onClick={copyLink} className="px-3 py-2 rounded bg-white/10 text-white text-sm">Copy</button>
+                    <a className="px-3 py-2 rounded bg-amber-500 text-white text-sm" href={upload.url} target="_blank" rel="noreferrer">Open</a>
+                  </div>
                 </div>
               )}
             </div>
 
-            {audioFile && (
-              <div className="flex-1">
-                <div className="text-sm text-gray-600">Preview</div>
+            {/* Right column: info */}
+            <aside className="p-4 rounded-lg border border-white/6 bg-white/3">
+              <div className="mb-4">
+                <h3 className="text-sm font-semibold text-white/90">Upload tips</h3>
+                <ul className="mt-2 text-xs text-white/80 space-y-2">
+                  <li>Use MP3 or WAV for best compatibility.</li>
+                  <li>Keep file under 20MB for faster uploads.</li>
+                  <li>Add a clear title so listeners can find your track.</li>
+                </ul>
+              </div>
+
+              <div className="mb-4">
+                <h4 className="text-xs font-medium text-white/90">Account</h4>
+                <p className="text-xs text-white/80 mt-1">Sign in with GitHub to manage your uploads (coming soon).</p>
+              </div>
+
+              <div className="mt-4 text-xs text-white/70">
+                <strong>Status:</strong>
                 <div className="mt-2">
-                  <audio ref={audioRef} controls src={URL.createObjectURL(audioFile)} className="w-full" />
+                  {upload.uploading ? (
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-amber-500 text-black text-sm">Uploading…</div>
+                  ) : upload.url ? (
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-emerald-500 text-black text-sm">Uploaded</div>
+                  ) : (
+                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded bg-white/6 text-white text-sm">Idle</div>
+                  )}
                 </div>
               </div>
-            )}
+            </aside>
           </div>
+        </section>
 
-          {/* Actions */}
-          <div className="flex flex-wrap items-center gap-3">
-            <button
-              onClick={uploadToServer}
-              disabled={upload.uploading || !audioFile}
-              aria-disabled={upload.uploading || !audioFile}
-              className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-60"
-            >
-              {upload.uploading ? "Uploading…" : "Start upload"}
-            </button>
-
-            <button onClick={clearAll} className="px-4 py-2 rounded border">
-              Clear
-            </button>
-
-            <div className="ml-auto text-sm text-gray-500">
-              {audioFile ? `${audioFile.name} (${Math.round((audioFile.size/1024)/1024*10)/10} MB)` : "No file selected"}
-            </div>
-          </div>
-
-          {/* Progress & messages */}
-          <div>
-            <div className="h-2 bg-gray-200 rounded overflow-hidden">
-              <div
-                aria-hidden
-                className="h-full bg-blue-600 transition-all"
-                style={{ width: `${upload.progress}%` }}
-              />
-            </div>
-            <div className="mt-2 flex items-center justify-between text-sm">
-              <div className="text-gray-600">{upload.message ?? ""}</div>
-              <div className="text-gray-500">{upload.progress ? `${upload.progress}%` : ""}</div>
-            </div>
-
-            {upload.error && (
-              <div className="mt-3 text-sm text-red-600 font-medium">
-                {upload.error}
-              </div>
-            )}
-          </div>
-
-          {/* Result */}
-          {upload.url && (
-            <div className="mt-3 text-sm flex items-start gap-3">
-              <div className="flex-1">
-                <div className="font-medium">Share link</div>
-                <a className="text-blue-600 break-words" href={upload.url} target="_blank" rel="noreferrer">
-                  {upload.url}
-                </a>
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <button onClick={copyLink} className="px-3 py-2 rounded bg-gray-100 border text-sm">Copy</button>
-                <a className="px-3 py-2 rounded bg-green-600 text-white text-sm" href={upload.url} target="_blank" rel="noreferrer">
-                  Open
-                </a>
-              </div>
-            </div>
-          )}
-        </div>
-      </section>
-    </main>
+        <footer className="mt-8 text-center text-sm text-white/60">
+          © {new Date().getFullYear()} MirrorSplit — Built with ♥
+        </footer>
+      </div>
+    </div>
   );
 }
