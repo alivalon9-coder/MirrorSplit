@@ -1,3 +1,8 @@
+<h1 style={{ fontSize: "32px", fontWeight: "bold", marginBottom: "20px" }}>
+  Upload Center — Live Update Test 🚀
+</h1>
+
+
 // app/upload/page.tsx
 "use client";
 import React, { useRef, useState } from "react";
