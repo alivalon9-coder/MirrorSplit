@@ -1,6 +1,3 @@
-<h1 style={{color: "red"}}>TEST DEPLOY</h1>
-
-// app/upload/page.tsx
 "use client";
 import React, { useRef, useState } from "react";
 
