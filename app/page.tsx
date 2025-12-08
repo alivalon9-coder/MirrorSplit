@@ -7,7 +7,10 @@ type UploadState = {
   uploading: boolean;
   message?: string;
   url?: string;
+  error?: string;
 };
+
+const MAX_AUDIO_BYTES = 20 * 1024 * 1024; // 20 MB
 
 export default function UploadPage() {
   const [audioFile, setAudioFile] = useState<File | null>(null);
@@ -18,15 +21,23 @@ export default function UploadPage() {
   const audioInputRef = useRef<HTMLInputElement | null>(null);
   const coverInputRef = useRef<HTMLInputElement | null>(null);
 
+  function setError(msg: string) {
+    setUpload(s => ({ ...s, error: msg, message: undefined, uploading: false }));
+  }
+
   function handleAudioPick(files?: FileList | null) {
     const file = files?.[0] ?? null;
     if (!file) return;
     if (!file.type.startsWith("audio/")) {
-      setUpload(s => ({ ...s, message: "Please select a valid audio file." }));
+      setError("Please select a valid audio file.");
+      return;
+    }
+    if (file.size > MAX_AUDIO_BYTES) {
+      setError("File too large. Max recommended size is 20 MB.");
       return;
     }
     setAudioFile(file);
-    setUpload(s => ({ ...s, message: undefined }));
+    setUpload(s => ({ ...s, message: undefined, error: undefined }));
     setTitle(prev => prev || file.name.replace(/\.[^/.]+$/, ""));
   }
 
@@ -34,10 +45,11 @@ export default function UploadPage() {
     const file = files?.[0] ?? null;
     if (!file) return;
     if (!file.type.startsWith("image/")) {
-      setUpload(s => ({ ...s, message: "Cover must be an image." }));
+      setError("Cover must be an image.");
       return;
     }
     setCoverFile(file);
+    setUpload(s => ({ ...s, error: undefined }));
   }
 
   function clearAll() {
@@ -50,7 +62,8 @@ export default function UploadPage() {
   }
 
   function uploadToServer() {
-    if (!audioFile) return setUpload(s => ({ ...s, message: "Choose an audio file first." }));
+    if (!audioFile) return setError("Choose an audio file first.");
+    setUpload({ progress: 0, uploading: true });
 
     const form = new FormData();
     form.append("audio", audioFile);
@@ -62,30 +75,44 @@ export default function UploadPage() {
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) {
         const pct = Math.round((e.loaded / e.total) * 100);
-        setUpload({ progress: pct, uploading: true });
+        setUpload(s => ({ ...s, progress: pct, uploading: true }));
       }
     };
     xhr.onload = () => {
       try {
         const body = JSON.parse(xhr.responseText || "{}");
-        setUpload({
-          progress: 100,
-          uploading: false,
-          message: body?.message ?? "Upload finished",
-          url: body?.url ?? undefined,
-        });
+        if (xhr.status >= 200 && xhr.status < 300) {
+          setUpload({
+            progress: 100,
+            uploading: false,
+            message: body?.message ?? "Upload finished",
+            url: body?.url ?? undefined,
+            error: undefined,
+          });
+        } else {
+          setError(body?.error ?? "Upload failed. Server returned an error.");
+        }
       } catch (err) {
-        setUpload({ progress: 100, uploading: false, message: "Upload finished (unexpected response)." });
+        setError("Upload completed but response was unexpected.");
       }
     };
-    xhr.onerror = () => setUpload({ progress: 0, uploading: false, message: "Upload failed. Try again." });
+    xhr.onerror = () => setError("Upload failed. Please try again.");
     xhr.send(form);
-    setUpload({ progress: 0, uploading: true, message: "Uploading..." });
+  }
+
+  async function copyLink() {
+    if (!upload.url) return;
+    try {
+      await navigator.clipboard.writeText(upload.url);
+      setUpload(s => ({ ...s, message: "Link copied to clipboard" }));
+    } catch {
+      setUpload(s => ({ ...s, message: "Failed to copy. Select and copy manually." }));
+    }
   }
 
   return (
     <main className="max-w-3xl mx-auto px-4 py-8">
-      <section className="bg-white/80 backdrop-blur-sm border rounded-lg shadow-sm p-6">
+      <section className="bg-white/90 border rounded-lg shadow p-6">
         <header className="mb-4">
           <h1 className="text-2xl md:text-3xl font-semibold">Upload Audio</h1>
           <p className="text-sm text-gray-500 mt-1">
@@ -101,6 +128,7 @@ export default function UploadPage() {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="Track title"
+              aria-label="Track title"
               className="mt-2 block w-full rounded-md border px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-300"
             />
           </label>
@@ -110,6 +138,8 @@ export default function UploadPage() {
             onDrop={(e) => { e.preventDefault(); handleAudioPick(e.dataTransfer.files); }}
             onDragOver={(e) => e.preventDefault()}
             className="border-2 border-dashed border-gray-200 rounded-md p-4 text-center"
+            role="button"
+            aria-label="Drop audio file here"
           >
             <p className="text-sm text-gray-600 mb-3">Drag & drop audio file here (mp3, wav, m4a) — or</p>
 
@@ -180,7 +210,8 @@ export default function UploadPage() {
           <div className="flex flex-wrap items-center gap-3">
             <button
               onClick={uploadToServer}
-              disabled={upload.uploading}
+              disabled={upload.uploading || !audioFile}
+              aria-disabled={upload.uploading || !audioFile}
               className="px-4 py-2 rounded bg-blue-600 text-white disabled:opacity-60"
             >
               {upload.uploading ? "Uploading…" : "Start upload"}
@@ -191,11 +222,11 @@ export default function UploadPage() {
             </button>
 
             <div className="ml-auto text-sm text-gray-500">
-              {audioFile ? audioFile.name : "No file selected"}
+              {audioFile ? `${audioFile.name} (${Math.round((audioFile.size/1024)/1024*10)/10} MB)` : "No file selected"}
             </div>
           </div>
 
-          {/* Progress */}
+          {/* Progress & messages */}
           <div>
             <div className="h-2 bg-gray-200 rounded overflow-hidden">
               <div
@@ -208,15 +239,30 @@ export default function UploadPage() {
               <div className="text-gray-600">{upload.message ?? ""}</div>
               <div className="text-gray-500">{upload.progress ? `${upload.progress}%` : ""}</div>
             </div>
+
+            {upload.error && (
+              <div className="mt-3 text-sm text-red-600 font-medium">
+                {upload.error}
+              </div>
+            )}
           </div>
 
           {/* Result */}
           {upload.url && (
-            <div className="mt-2 text-sm">
-              <div className="font-medium">Share link</div>
-              <a className="text-blue-600 break-words" href={upload.url} target="_blank" rel="noreferrer">
-                {upload.url}
-              </a>
+            <div className="mt-3 text-sm flex items-start gap-3">
+              <div className="flex-1">
+                <div className="font-medium">Share link</div>
+                <a className="text-blue-600 break-words" href={upload.url} target="_blank" rel="noreferrer">
+                  {upload.url}
+                </a>
+              </div>
+
+              <div className="flex flex-col gap-2">
+                <button onClick={copyLink} className="px-3 py-2 rounded bg-gray-100 border text-sm">Copy</button>
+                <a className="px-3 py-2 rounded bg-green-600 text-white text-sm" href={upload.url} target="_blank" rel="noreferrer">
+                  Open
+                </a>
+              </div>
             </div>
           )}
         </div>
