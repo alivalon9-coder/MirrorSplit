@@ -1,0 +1,20 @@
+/* app/globals.css */
+
+/* Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* BODY WITH NO BACKGROUND AT ALL */
+body {
+  background: #ffffff !important;
+  color: black;
+  font-family: sans-serif;
+}
+
+/* Tailwind */
+@tailwind base;
+@tailwind components;
+@tailwind utilities;

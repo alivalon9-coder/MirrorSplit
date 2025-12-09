@@ -1,0 +1,84 @@
+"use client";
+import React, { useRef, useState } from "react";
+
+export default function UploadDropzone({ onUploaded }) {
+  const inputRef = useRef(null);
+  const [hover, setHover] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [preview, setPreview] = useState(null);
+
+  const CLOUD_NAME = process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME;
+  const UPLOAD_PRESET = process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET;
+
+  const uploadFile = async (file) => {
+    if (!file) return;
+    setLoading(true);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      fd.append("upload_preset", UPLOAD_PRESET || "");
+      const url = `https://api.cloudinary.com/v1_1/${CLOUD_NAME}/auto/upload`;
+      const res = await fetch(url, { method: "POST", body: fd });
+      const text = await res.text();
+      let data;
+      try { data = JSON.parse(text); } catch(e) { data = { raw: text }; }
+
+      if (!res.ok) {
+        throw new Error(`Upload failed status=${res.status} body=${text}`);
+      }
+
+      const uploadedUrl = data.secure_url || data.url;
+      onUploaded && onUploaded(uploadedUrl);
+      setPreview(uploadedUrl);
+      return uploadedUrl;
+    } catch (err) {
+      console.error("[upload] error", err);
+      alert("Upload error: " + (err.message || err));
+    } finally {
+      setLoading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  };
+
+  const handleFiles = (files) => {
+    const f = files?.[0];
+    if (!f) return;
+    if (f.type.startsWith("image/")) {
+      const url = URL.createObjectURL(f);
+      setPreview(url);
+    } else setPreview(null);
+    uploadFile(f);
+  };
+
+  return (
+    <div className="max-w-2xl mx-auto p-6">
+      <div
+        onDragOver={(e) => { e.preventDefault(); setHover(true); }}
+        onDragLeave={() => setHover(false)}
+        onDrop={(e)=>{ e.preventDefault(); setHover(false); handleFiles(e.dataTransfer.files); }}
+        className={`border-2 rounded-2xl p-10 flex flex-col items-center justify-center gap-4 transition ${hover ? "border-dashed scale-[1.01]" : "border-solid"}`}
+        style={{
+          borderColor: hover ? "rgba(6,182,212,0.8)" : "rgba(255,255,255,0.06)",
+          background: "linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))"
+        }}
+      >
+        {preview ? (
+          <img src={preview} alt="preview" className="max-h-48 object-contain rounded-md" />
+        ) : (
+          <>
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 5 17 10"/>
+              <line x1="12" y1="5" x2="12" y2="19"/>
+            </svg>
+            <div className="text-sm">Drag & drop here, or <button onClick={() => inputRef.current?.click()} className="underline">browse</button></div>
+            <div className="text-xs">Images, audio, video — max size depends on your Cloudinary plan</div>
+          </>
+        )}
+
+        <input ref={inputRef} type="file" accept="image/*,audio/*,video/*" onChange={(e) => handleFiles(e.target.files)} className="hidden" />
+        {loading && <div className="text-sm">Uploading...</div>}
+      </div>
+    </div>
+  );
+}
