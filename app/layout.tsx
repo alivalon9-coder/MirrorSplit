@@ -1,15 +1,18 @@
-// app/layout.tsx
-import "./globals.css";
+import './globals.css';
+import React from 'react';
+import Header from './components/Header';
 
 export const metadata = {
-  title: "MirrorSplit",
-  description: "Upload and share your audio tracks easily.",
+  title: 'MirrorSplit',
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body style={{ fontFamily: 'system-ui, Arial, sans-serif' }}>
+        <Header />
+        <div>{children}</div>
+      </body>
     </html>
   );
 }
