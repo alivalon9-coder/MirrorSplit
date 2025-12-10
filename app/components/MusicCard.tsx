@@ -38,6 +38,7 @@ export default function MusicCard({ item }: Props) {
   }, []);
 
 
+
   function startEdit() {
     setFormTitle(item.title || '');
     setFormArtist(item.artist || '');
@@ -109,20 +110,72 @@ export default function MusicCard({ item }: Props) {
   }
 
   function onBuy() {
-    // placeholder action
+    // Buying not wired yet – show a clear message instead of doing nothing
+    // eslint-disable-next-line no-alert
+    alert('Buying this track is not set up yet. Please contact the site owner or try again later.');
     // eslint-disable-next-line no-console
-    console.log('Buy', item.id);
+    console.log('Buy clicked for', item.id);
   }
 
   // playback handled inline in render using the internal audioRef
 
   return (
     <article style={{ border: '1px solid #e1e1e1', borderRadius: 8, padding: 12, width: '100%', boxSizing: 'border-box' }}>
-      <h3 style={{ margin: '0 0 6px 0', fontSize: 16 }}>{item.title}</h3>
-      {item.artist && <div style={{ color: '#555', marginBottom: 6 }}>{item.artist}</div>}
-      {item.info && <div style={{ color: '#333', marginBottom: 8 }}>{item.info}</div>}
-      {item.price && <div style={{ marginTop: 6, fontWeight: 600 }}>{item.price}</div>}
-      <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center' }}>
+      {editing ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 8 }}>
+          <input
+            value={formTitle}
+            onChange={(e) => setFormTitle(e.target.value)}
+            placeholder="Title"
+            style={{ padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+          />
+          <input
+            value={formArtist}
+            onChange={(e) => setFormArtist(e.target.value)}
+            placeholder="Artist"
+            style={{ padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+          />
+          <input
+            value={formPrice}
+            onChange={(e) => setFormPrice(e.target.value)}
+            placeholder="Price (optional)"
+            style={{ padding: 6, borderRadius: 4, border: '1px solid #ccc' }}
+          />
+          <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+            <button
+              type="button"
+              onClick={saveEdit}
+              style={{ padding: '4px 8px', cursor: 'pointer' }}
+            >
+              Save
+            </button>
+            <button
+              type="button"
+              onClick={() => setEditing(false)}
+              style={{ padding: '4px 8px', cursor: 'pointer' }}
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          <h3 style={{ margin: '0 0 6px 0', fontSize: 16 }}>{item.title}</h3>
+          {item.artist && <div style={{ color: '#555', marginBottom: 6 }}>{item.artist}</div>}
+          {item.info && <div style={{ color: '#333', marginBottom: 8 }}>{item.info}</div>}
+          {item.price && <div style={{ marginTop: 6, fontWeight: 600 }}>{item.price}</div>}
+        </>
+      )}
+      <div style={{ display: 'flex', gap: 8, marginTop: 10, alignItems: 'center', flexWrap: 'nowrap' }}>
+        {/* Buy first */}
+        <button onClick={onBuy} style={{ padding: '6px 8px', cursor: 'pointer', fontWeight: 700, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }} aria-label="Buy">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+            <path d="M6 6h15l-1.5 9h-12L4 3H2" stroke="#111" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+            <circle cx="10" cy="20" r="1" fill="#111" />
+            <circle cx="18" cy="20" r="1" fill="#111" />
+          </svg>
+        </button>
+
         {/* Play / Pause */}
         {((item as any).previewUrl) ? (
           <>
@@ -145,6 +198,7 @@ export default function MusicCard({ item }: Props) {
                 }
               }}
               style={{ padding: '6px 8px', cursor: 'pointer' }}
+              aria-label="Play"
             >
               {loading ? 'Loading…' : playing ? 'Pause' : 'Play'}
             </button>
@@ -154,22 +208,24 @@ export default function MusicCard({ item }: Props) {
           <span style={{ color: '#888' }}>No preview</span>
         )}
 
-        {!editing ? (
-          <button onClick={startEdit} title="Edit" style={{ padding: '6px 8px', cursor: 'pointer' }} aria-label="Edit">
-            {/* pencil icon */}
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M3 21l3-1 11-11 1-3-3 1-11 11-1 3z" stroke="#111" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+        {/* Save / Download button */}
+        {item.previewUrl ? (
+          <a href={item.previewUrl} download style={{ padding: '6px 8px', display: 'inline-flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none', color: 'inherit', border: '1px solid #ccc', borderRadius: 4 }} rel="noopener noreferrer" aria-label="Save">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+              <path d="M21 15v4a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-4" stroke="#111" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+              <path d="M7 10l5 5 5-5" stroke="#111" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-          </button>
+          </a>
         ) : (
-          <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-            <input value={formTitle} onChange={(e) => setFormTitle(e.target.value)} style={{ padding: 6 }} />
-            <input value={formArtist} onChange={(e) => setFormArtist(e.target.value)} style={{ padding: 6 }} />
-            <input value={formPrice} onChange={(e) => setFormPrice(e.target.value)} style={{ padding: 6, width: 80 }} />
-            <button onClick={saveEdit} style={{ padding: '6px 8px', cursor: 'pointer' }}>Save</button>
-            <button onClick={() => setEditing(false)} style={{ padding: '6px 8px' }}>Cancel</button>
-          </div>
+          <button disabled style={{ padding: '6px 8px', cursor: 'not-allowed' }} aria-hidden>Save</button>
         )}
+
+        <button onClick={startEdit} title="Edit" style={{ padding: '6px 8px', cursor: 'pointer' }} aria-label="Edit">
+          {/* pencil icon */}
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 21l3-1 11-11 1-3-3 1-11 11-1 3z" stroke="#111" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
+        </button>
         <button onClick={onDelete} title="Delete" style={{ padding: '6px 8px', cursor: 'pointer' }} aria-label="Delete">
           {/* trash icon */}
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -179,15 +235,6 @@ export default function MusicCard({ item }: Props) {
             <path d="M14 11v6" stroke="#111" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
           </svg>
         </button>
-        {/* Save / Download button: uses anchor with download so browser will save file locally */}
-        {item.previewUrl ? (
-          <a href={item.previewUrl} download style={{ padding: '6px 8px', display: 'inline-block', textDecoration: 'none', color: 'inherit', border: '1px solid #ccc', borderRadius: 4 }} rel="noopener noreferrer">
-            Save
-          </a>
-        ) : (
-          <button disabled style={{ padding: '6px 8px', cursor: 'not-allowed' }}>Save</button>
-        )}
-        <button onClick={onBuy} style={{ padding: '6px 8px', cursor: 'pointer', fontWeight: 700 }}>Buy</button>
       </div>
     </article>
   );

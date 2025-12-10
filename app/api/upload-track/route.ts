@@ -1,23 +1,17 @@
 import { NextResponse } from 'next/server';
-import * as fs from 'fs';
-import path from 'path';
+import { createClient } from '@supabase/supabase-js';
 
 export const runtime = 'nodejs';
 
-const UPLOAD_DIR = path.join(process.cwd(), 'public', 'uploads');
-const DATA_DIR = path.join(process.cwd(), 'data');
-const DATA_FILE = path.join(DATA_DIR, 'uploads.json');
+const SUPABASE_URL = process.env.SUPABASE_URL || '';
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || '';
 
-function ensureDirs() {
-  if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-  if (!fs.existsSync(DATA_DIR)) fs.mkdirSync(DATA_DIR, { recursive: true });
-  if (!fs.existsSync(DATA_FILE)) fs.writeFileSync(DATA_FILE, JSON.stringify([]));
-}
+const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+  auth: { persistSession: false },
+});
 
 export async function POST(request: Request) {
   try {
-    ensureDirs();
-
     const formData = await request.formData();
     const title = formData.get('title')?.toString() || 'Untitled';
     const artist = formData.get('artist')?.toString() || 'Unknown';
@@ -31,15 +25,27 @@ export async function POST(request: Request) {
 
     if (file) {
       const originalName = (file as any).name || 'file.bin';
-      const ext = path.extname(originalName) || '.bin';
+      const ext = originalName.includes('.') ? originalName.substring(originalName.lastIndexOf('.')) : '';
       const safeName = `${id}${ext}`;
-      const filePath = path.join(UPLOAD_DIR, safeName);
       fileName = safeName;
 
-      // Read file stream and write to disk
       const buffer = Buffer.from(await file.arrayBuffer());
-      fs.writeFileSync(filePath, buffer);
-      url = `/uploads/${safeName}`;
+
+      // upload to Supabase Storage (bucket: uploads)
+      const uploadRes = await supabase.storage.from('uploads').upload(safeName, buffer, {
+        contentType: (file as any).type || 'application/octet-stream',
+        cacheControl: '3600',
+        upsert: false,
+      });
+
+      if (uploadRes.error) {
+        console.error('Supabase upload error', uploadRes.error);
+        return NextResponse.json({ ok: false, error: 'Upload failed' }, { status: 500 });
+      }
+
+      // get public url
+      const { data: publicData } = supabase.storage.from('uploads').getPublicUrl(safeName);
+      url = publicData?.publicUrl || null;
     }
 
     const item = {
@@ -53,12 +59,15 @@ export async function POST(request: Request) {
       createdAt: new Date().toISOString(),
     };
 
-    // append metadata to data/uploads.json
-    const existing = JSON.parse(fs.readFileSync(DATA_FILE, 'utf-8') || '[]');
-    existing.unshift(item);
-    fs.writeFileSync(DATA_FILE, JSON.stringify(existing, null, 2));
+    // insert metadata into Supabase table `uploads`
+    const dbRes = await supabase.from('uploads').insert(item).select();
+    if (dbRes.error) {
+      console.error('Supabase insert error', dbRes.error);
+      // still return item but warn
+      return NextResponse.json({ ok: false, error: 'Metadata save failed' }, { status: 500 });
+    }
 
-    return NextResponse.json({ ok: true, item });
+    return NextResponse.json({ ok: true, item: dbRes.data?.[0] ?? item });
   } catch (err) {
     // eslint-disable-next-line no-console
     console.error('upload error', err);
