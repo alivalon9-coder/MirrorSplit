@@ -11,7 +11,7 @@
   "dependencies": {
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@stripe/stripe-js": "^8.5.3",
-    "@supabase/supabase-js": "^2.86.2",
+    "@supabase/supabase-js": "^2.87.1",
     "cloudinary": "^2.8.0",
     "formidable": "^3.5.4",
     "next": "^16.0.7",
