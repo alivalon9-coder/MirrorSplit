@@ -149,6 +149,24 @@ export default function UploadEnhancePage() {
         </button>
       </div>
 
-      {progressText && <div className="mt-3 text-gray-600 text-sm">{progressText}</div>}
+        {progressText && <div className="mt-3 text-gray-600 text-sm">{progressText}</div>}
 
-      {
+        {outputUrl && (
+          <div className="mt-4">
+            <a
+              href={outputUrl}
+              download="mastered.mp3"
+              className="text-blue-600 underline"
+            >
+              Download mastered file
+            </a>
+            <audio
+              controls
+              src={outputUrl}
+              className="mt-2 w-full"
+            />
+          </div>
+        )}
+      </div>
+    );
+  }
