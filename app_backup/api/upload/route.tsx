@@ -1,7 +1,8 @@
 // MusicItem.jsx
+"use client";
 import React from "react";
 
-export default function MusicItem({ item, onUpdated }) {
+export default function MusicItem({ item, onUpdated }: any) {
   const handleEdit = () => {
     // Navigate to edit page or open modal
     window.location.href = `/dashboard/music/edit/${item.id}`;

@@ -13,7 +13,9 @@ export default function UploadEnhancePage() {
   async function loadFFmpeg() {
     if (typeof window === "undefined") throw new Error("FFmpeg must run in browser");
 
-    const { createFFmpeg, fetchFile } = await import("@ffmpeg/ffmpeg");
+    const ffmpegModule = await import("@ffmpeg/ffmpeg");
+    const createFFmpeg = (ffmpegModule as any).FFmpeg;
+    const fetchFile = (ffmpegModule as any).fetchFile;
 
     const CORE_CANDIDATES = [
       // try jsdelivr first

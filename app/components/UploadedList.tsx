@@ -77,7 +77,7 @@ export default function UploadedList({ section }: { section: string }) {
       <audio ref={audioRef} />
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 12 }}>
         {items.map((it) => (
-          <MusicCard key={it.id} item={it} previewUrl={(it as any).previewUrl} />
+          <MusicCard key={it.id} item={it} />
         ))}
       </section>
     </>

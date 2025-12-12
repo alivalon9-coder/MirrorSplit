@@ -127,7 +127,7 @@ export default async function handler(req, res) {
   const section = fieldToString(fields.section, "for-sale");
 
   const createdAt = new Date().toISOString();
-  const filePath = uploadResult.public_id || uploadResult.secure_url;
+  const filePathOrId = uploadResult.public_id || uploadResult.secure_url;
 
   const payloadVariants = [
     {
@@ -135,7 +135,7 @@ export default async function handler(req, res) {
       artist,
       price,
       section,
-      fileName: filePath,
+      fileName: filePathOrId,
       url: uploadResult.secure_url,
       createdAt,
     },
@@ -144,7 +144,7 @@ export default async function handler(req, res) {
       artist,
       price,
       section,
-      filename: filePath,
+      filename: filePathOrId,
       url: uploadResult.secure_url,
       createdat: createdAt,
     },
@@ -153,7 +153,7 @@ export default async function handler(req, res) {
       artist,
       price,
       section,
-      file_path: filePath,
+      file_path: filePathOrId,
       url: uploadResult.secure_url,
       created_at: createdAt,
     },

@@ -174,7 +174,7 @@ export async function POST(request: Request) {
             ok: true, 
             item,
             warning: 'File uploaded successfully, but saved to local backup only',
-            metadataError: lastError?.message,
+            metadataError: String(lastError),
             suggestion: 'Database may be temporarily unavailable. Metadata saved locally.'
           }, { status: 200 });
         } catch (localErr) {
@@ -194,9 +194,9 @@ export async function POST(request: Request) {
         return NextResponse.json({ 
           ok: false, 
           error: 'Metadata save failed', 
-          details: lastError?.message || 'Unknown error',
-          code: lastError?.code,
-          hint: lastError?.hint || 'Please check database connection and table schema'
+          details: String(lastError),
+          code: (lastError as any)?.code,
+          hint: (lastError as any)?.hint || 'Please check database connection and table schema'
         }, { status: 500 });
       }
 
