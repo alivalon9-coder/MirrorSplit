@@ -1,8 +1,21 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.SUPABASE_URL || "";
-const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
+const supabaseUrl = process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || "";
+const supabaseKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+
+function fromDbRow(row: any) {
+  return {
+    id: row.id,
+    title: row.title ?? "",
+    artist: row.artist ?? "",
+    price: row.price ?? "",
+    section: row.section ?? "unknown",
+    fileName: row.file_path ?? row.file_name ?? row.filename ?? row.fileName ?? null,
+    url: row.url ?? null,
+    createdAt: row.created_at ?? row.createdat ?? row.createdAt ?? new Date().toISOString(),
+  };
+}
 
 function getClient() {
   if (!supabaseUrl || !supabaseKey) return null;
@@ -38,7 +51,7 @@ export async function GET(
       );
     }
 
-    return NextResponse.json({ item: data }, { status: 200 });
+    return NextResponse.json({ item: fromDbRow(data) }, { status: 200 });
   } catch (err) {
     console.error("GET /api/uploads/[id] error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
@@ -65,7 +78,15 @@ export async function PATCH(
 
     if (typeof body.title === "string") update.title = body.title;
     if (typeof body.artist === "string") update.artist = body.artist;
-    if (typeof body.price === "string") update.price = body.price;
+    if (typeof body.price === "string") {
+      const cleaned = body.price.trim();
+      if (!cleaned) {
+        update.price = null;
+      } else {
+        const num = Number(cleaned.replace(/[^0-9.]/g, ""));
+        update.price = Number.isFinite(num) ? num : null;
+      }
+    }
 
     if (Object.keys(update).length === 0) {
       return NextResponse.json(
@@ -89,7 +110,7 @@ export async function PATCH(
       );
     }
 
-    return NextResponse.json({ item: data }, { status: 200 });
+    return NextResponse.json({ item: data ? fromDbRow(data) : null }, { status: 200 });
   } catch (err) {
     console.error("PATCH /api/uploads/[id] error:", err);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
@@ -114,7 +135,7 @@ export async function DELETE(
     // Get fileName first so we can delete from storage
     const { data: track, error: fetchError } = await client
       .from("uploads")
-      .select("fileName")
+      .select("filename")
       .eq("id", id)
       .single();
 
@@ -122,10 +143,11 @@ export async function DELETE(
       console.error("Fetch track error:", fetchError);
     }
 
-    if (track?.fileName) {
+    const fileKey = track?.filename;
+    if (fileKey) {
       const { error: storageError } = await client.storage
         .from("uploads")
-        .remove([track.fileName]);
+        .remove([fileKey]);
 
       if (storageError) {
         console.error("Storage delete error:", storageError);

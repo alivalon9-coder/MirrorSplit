@@ -1,4 +1,8 @@
+"use client";
+
 import React from 'react';
+import UploadIconButton from './UploadIconButton';
+import RecentUploads from './RecentUploads';
 
 export interface StatItem {
   id: string;
@@ -11,6 +15,15 @@ interface Props {
 }
 
 export default function Dashboard({ stats = [] }: Props) {
+  const handleUploadSuccess = (item: any) => {
+    console.log('Upload successful:', item);
+    // The RecentUploads component will automatically update via the event listener
+    // Force a small delay to ensure the API has saved the data
+    setTimeout(() => {
+      window.dispatchEvent(new CustomEvent('uploads:changed', { detail: item }));
+    }, 100);
+  };
+
   return (
     <section>
       <h1 style={{ marginBottom: 8 }}>Dashboard</h1>
@@ -24,6 +37,13 @@ export default function Dashboard({ stats = [] }: Props) {
           </div>
         ))}
       </div>
+
+      {/* Recent Uploads Feed - Viral Section */}
+      <div style={{ marginTop: 32 }}>
+        <RecentUploads limit={10} showShareButton={true} />
+      </div>
+
+      <UploadIconButton onUploadSuccess={handleUploadSuccess} />
     </section>
   );
 }

@@ -1,52 +1,82 @@
 // pages/api/upload-vocal.js
-import formidable from "formidable";
-import fs from "fs";
-import axios from "axios";
-import FormData from "form-data";
+import fs from 'fs';
+import formidable from 'formidable';
+import { createClient } from '@supabase/supabase-js';
 
-export const config = { api: { bodyParser: false } };
+export const config = {
+  api: {
+    bodyParser: false, // important for file uploads
+  },
+};
 
-export default async function handler(req, res) {
-  if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const bucketName = 'music'; // <-- change this if your bucket has a different name
 
-  const form = new formidable.IncomingForm({ maxFileSize: 50 * 1024 * 1024 }); // 50MB cap
-  form.parse(req, async (err, fields, files) => {
-    if (err) {
-      console.error("formidable error:", err);
-      return res.status(400).json({ error: "Invalid upload" });
-    }
+if (!supabaseUrl || !supabaseServiceKey) {
+  throw new Error('Missing SUPABASE env vars');
+}
 
-    if (!files?.audio) return res.status(400).json({ error: "No file uploaded (name should be 'audio')" });
+const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
-    try {
-      const file = files.audio;
-      const buffer = fs.readFileSync(file.filepath);
-
-      // build form-data for Suno "add-instrumental" endpoint
-      const fd = new FormData();
-      fd.append("file", buffer, { filename: file.originalFilename || "vocal.wav" });
-      // optional params: style, tempo, key — depends on Suno docs
-      if (fields.style) fd.append("style", fields.style);
-      fd.append("mode", "add-instrumental"); // adjust param name per Suno docs
-
-      const sunoRes = await axios.post(
-        "https://api.suno.ai/api/v1/generate/add-instrumental",
-        fd,
-        {
-          headers: {
-            ...fd.getHeaders(),
-            Authorization: `Bearer ${process.env.SUNO_API_KEY}`,
-          },
-          timeout: 120000
-        }
-      );
-
-      // suno likely returns taskId or job info
-      const data = sunoRes.data;
-      return res.status(200).json({ ok: true, data });
-    } catch (e) {
-      console.error("Suno error:", e.response?.data || e.message);
-      return res.status(500).json({ ok: false, error: e.response?.data || e.message });
-    }
+function parseForm(req) {
+  return new Promise((resolve, reject) => {
+    const form = new formidable.IncomingForm();
+    form.parse(req, (err, fields, files) => {
+      if (err) reject(err);
+      else resolve({ fields, files });
+    });
   });
 }
+
+export default async function handler(req, res) {
+  if (req.method !== 'POST') {
+    res.setHeader('Allow', 'GET,POST');
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  try {
+    const { fields, files } = await parseForm(req);
+
+    // Expecting the file input name to be "file" (adjust if your client uses a different name)
+    const file = files.file || files.audio || files.upload;
+    if (!file) {
+      return res.status(400).json({ error: 'No file provided (expected field name "file")' });
+    }
+
+    // read the file into a buffer
+    const data = fs.readFileSync(file.path);
+
+    // choose a path (timestamp + original name) to avoid collisions
+    const fileName = `${Date.now()}_${file.name.replace(/\s+/g, '_')}`;
+    const filePath = `${fileName}`;
+
+    // upload to Supabase storage
+    const { error: uploadError } = await supabase.storage
+      .from(bucketName)
+      .upload(filePath, data, {
+        contentType: file.type || 'application/octet-stream',
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error('Supabase upload error:', uploadError);
+      return res.status(500).json({ error: 'Upload failed', details: uploadError });
+    }
+
+    // get public URL (or use createSignedUrl if private)
+    const { data: publicUrlData } = supabase.storage.from(bucketName).getPublicUrl(filePath);
+    const publicUrl = publicUrlData?.publicUrl || null;
+
+    return res.status(200).json({
+      message: 'Upload successful',
+      url: publicUrl,
+      filePath,
+      fields,
+    });
+  } catch (err) {
+    console.error('Upload handler error:', err);
+    return res.status(500).json({ error: 'Server error', details: err?.message || err });
+  }
+}
+
